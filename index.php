@@ -43,13 +43,19 @@
 						cid[i][1]
 						+" (value)  = "+ 
 						drawerTake
+						+" (times)  = "+ 
+						unitValue[i][1] * drawerTake
+						+" (substract)  = "+
+						parseFloat(unitValue[i][1] * drawerTake).toPrecision(3)
 					);
 					
 					// Adds current change units to 2D array
 					change = addChangeToArray(unitValue[i][0], unitValue[i][1] * drawerTake, change);
 					
 					// Substract current currency unit given ammount from total change
-					totalChange -= unitValue[i][1] * drawerTake;
+					//totalChange -= unitValue[i][1] * drawerTake;
+					//totalChange = parseFloat(totalChange).toPrecision(2);
+					totalChange = parseFloat(totalChange- (unitValue[i][1] * drawerTake)).toPrecision(4);
 					
 					// Stop loop if all change has been given
 					if(change == 0)
@@ -59,16 +65,15 @@
 			console.log("-----");
 			
 			totalCash = totalInDrawer(cid);
-			
+			console.log(totalChange);
 			console.log(totalCash);
 			
-			console.log(totalChange);
-			
-			if(totalChange == 0 && totalCash > 0)
+			// Managing return status
+			if(totalChange == 0 && totalCash > cash - price)
 			{
 				status = "OPEN";
 			}
-			else if(totalChange == 0 && totalCash == 0)
+			else if(totalChange == 0 && totalCash == cash - price)
 			{
 				status = "CLOSED";
 			}
@@ -77,7 +82,6 @@
 				change = [];
 				status = "INSUFFICIENT_FUNDS";
 			}
-			
 			
 			return jsonData(status, change);
 		}
@@ -161,7 +165,7 @@
 		}
 
 		console.log(
-			checkCashRegister(19.5, 20, [["PENNY", 0.01], ["NICKEL", 0], ["DIME", 0], ["QUARTER", 0], ["ONE", 1], ["FIVE", 0], ["TEN", 0], ["TWENTY", 0], ["ONE HUNDRED", 0]])
+			checkCashRegister(19.5, 20, [["PENNY", 0.5], ["NICKEL", 0], ["DIME", 0], ["QUARTER", 0], ["ONE", 0], ["FIVE", 0], ["TEN", 0], ["TWENTY", 0], ["ONE HUNDRED", 0]])
 		);
 
 	</script>
