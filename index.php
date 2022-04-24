@@ -20,30 +20,65 @@
 		 * @return change 	Array key.
 		 */
 		function checkCashRegister(price, cash, cid) {
-			let change = [];
-			var status;
-			var totalCash = totalInDrawer(cid);
+			let change = [];						// 2D array with change units
+			var status;								// drawer status that will be returned with change	
+			var totalCash;					 		// total cash in drawer (int)
+			var totalChange = cash - price;			// total change to give (int)
 			
-			console.log(cash - price);
+			//console.log(cid);
+			console.log("Change: " + totalChange);
+			console.log("-----");
+			for(var i=cid.length - 1; i>=0; i--)
+			{
+				// Find highest value to return in drawer
+				//if(change >= unitValue[i][1] && cid[i][1] > 0)
+				if(totalChange >= unitValue[i][1])
+				{
+					// Takes as many current currency units as available
+					var drawerTake = countUnits(totalChange, cid[i][1], unitValue[i][1]); 
+					
+					console.log(
+						unitValue[i][1] 
+						+" (unit) = "+ 
+						cid[i][1]
+						+" (value)  = "+ 
+						drawerTake
+					);
+					
+					// Adds current change units to 2D array
+					change = addChangeToArray(unitValue[i][0], unitValue[i][1] * drawerTake, change);
+					
+					// Substract current currency unit given ammount from total change
+					totalChange -= unitValue[i][1] * drawerTake;
+					
+					// Stop loop if all change has been given
+					if(change == 0)
+						break;
+				}
+			}
+			console.log("-----");
+			
+			totalCash = totalInDrawer(cid);
+			
 			console.log(totalCash);
 			
-			if(cash - price < totalCash)
+			console.log(totalChange);
+			
+			if(totalChange == 0 && totalCash > 0)
 			{
-				change = formChange(price, cash, cid);
 				status = "OPEN";
 			}
-			else if(cash - price == totalCash)
+			else if(totalChange == 0 && totalCash == 0)
 			{
-				change = formChange(price, cash, cid);
 				status = "CLOSED";
 			}
-			else
+			else 
 			{
+				change = [];
 				status = "INSUFFICIENT_FUNDS";
 			}
 			
-			//return change;
-			//return totalCash;
+			
 			return jsonData(status, change);
 		}
 
@@ -85,72 +120,9 @@
 			
 			return Math.round(total * 100) / 100;
 		}
-
-		/**
-		 * Forms change array
-		 * @param change 	Change ammount.
-		 * @param cid 		Array with cash in drawer.
-		 * @return cid 	Array with cash in drawer left.
-		 */
-		function formChange(price, cash, cid)
-		{
-			var change = Math.abs(price - cash); // total change int
-			var changeArr = []; // change by available units in drawer
-			
-			console.log(cid);
-			console.log("Change: " + change);
-			console.log("-----");
-			
-			for(var i=cid.length - 1; i>=0; i--)
-			{
-				// Find highest value to return in drawer
-				//if(change >= unitValue[i][1] && cid[i][1] > 0)
-				if(change >= unitValue[i][1])
-				{
-					console.log(
-						unitValue[i][1] 
-						+" (unit) = "+ 
-						cid[i][1]
-						+" (value)  = "+ 
-						countUnits(change, unitValue[i][1])
-					);
-					
-					// Current currency unit change
-					var unitChange = countUnits(change, unitValue[i][1]);
-					
-					if(unitChange * unitValue[i][1] <= cid[i][1])
-					{
-						changeArr = addChangeToArray(unitValue[i][0], unitChange * unitValue[i][1], changeArr);
-						change -= unitChange * unitValue[i][1];
-					}
-					else
-					{
-						changeArr = addChangeToArray(unitValue[i][0], cid[i][1], changeArr);
-						change -= cid[i][1];	
-					}
-				}
-				
-				/* if(change == 0)
-					break; */
-			}
-			
-			console.log("-----");
-			return changeArr;
-		}
 		
 		function addChangeToArray(unit, change, array)
 		{
-/* 			if(array.length == 0)
-			{
-				array.push([unit, change]);
-				return array;
-			}
-			
-			for(var i=0; i < array.length; i++)
-			{
-				
-			} */
-			
 			array.push([unit, change]);
 			return array;
 		}
@@ -158,12 +130,17 @@
 		/**
 		 * Counts how many currency units can be changed
 		 * @param change 	Total ammount of change.
+		 * @param units 	How many units drawer has.
 		 * @param uVal 		One currency unit value to count.
-		 * @return int 	Ammount of units can be changed.
+		 * @return int 		Ammount of units can be changed.
 		 */
-		function countUnits(change, uVal)
+		function countUnits(change, units, uVal)
 		{
-			return Math.floor(change / uVal);
+			if(change <= units)
+			{
+				return Math.floor(change / uVal);
+			}
+			return Math.floor(units / uVal);;
 		}		
 
 		/**
